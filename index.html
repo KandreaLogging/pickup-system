@@ -181,8 +181,8 @@
                 <div class="no-print bg-slate-50 p-3 rounded-xl border border-slate-200 max-w-md mx-auto mb-6 text-left">
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Target Form URL:</label>
                     <div class="flex gap-2">
-                        <input type="text" id="target-url-input" class="w-full bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500" readonly>
-                        <button onclick="editTargetUrl()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-medium transition">Change</button>
+                        <input type="text" id="target-url-input" class="w-full bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <button onclick="updateTargetUrlFromInput()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition">Update QR</button>
                     </div>
                 </div>
 
@@ -322,7 +322,7 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 no-print">
-        <p>EquipTrack Employee Pick-Up & Drop-Off System &copy; Local Storage Data Mode</p>
+        <p>EquipTrack Employee Pick-Up & Drop-Off System &copy; Central Cloud Sync Mode</p>
     </footer>
 
     <!-- JavaScript Application Logic -->
@@ -346,6 +346,27 @@
             // Render log table
             renderLogTable();
         };
+
+        function generateQRCode(url) {
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = "";
+            qrGenerator = new QRCode(qrContainer, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        function updateTargetUrlFromInput() {
+            const newUrl = document.getElementById('target-url-input').value.trim();
+            if (newUrl) {
+                generateQRCode(newUrl);
+                showToast('QR Code updated successfully!', 'success');
+            }
+        }
 
         // Handle Photo Selection & Compression
         function handlePhotoSelect(event) {
@@ -443,7 +464,7 @@
             }
         }
 
-        // Handle Form Submission
+        // Handle Form Submission -> Connected to Google Sheet Backend
         function handleFormSubmit(e) {
             e.preventDefault();
 
@@ -459,6 +480,19 @@
                 return;
             }
 
+            // Google Apps Script Web App URL
+            const webAppUrl = "https://script.google.com/macros/s/AKfycbzgyecavmfQ3qJe8XC7j_NGP8sB3W9LF60SftayBW59-RmkbwFL27rmjChi_N_uvysxSg/exec";
+
+            const formData = {
+                action: action === 'PICKUP' ? 'Pick-Up' : 'Drop-Off',
+                driverName: employeeName,
+                projectSite: projectSite,
+                itemDesc: itemDescription,
+                location: location,
+                photoUrl: currentPhotoBase64 ? "Attached" : "No Photo"
+            };
+
+            // Also keep local storage copy for the dashboard table view
             const newEntry = {
                 id: Date.now(),
                 employeeName,
@@ -470,24 +504,44 @@
                 timestamp
             };
 
-            // Add to array & persist
             logs.unshift(newEntry);
             try {
                 localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
             } catch (err) {
-                showToast('Storage space exceeded. Consider deleting old logs.', 'error');
+                console.warn('Local storage limit reached');
             }
 
-            // Reset form fields
-            document.getElementById('employeeName').value = '';
-            document.getElementById('projectSite').value = '';
-            document.getElementById('location').selectedIndex = 0;
-            document.getElementById('itemDescription').value = '';
-            removeSelectedPhoto();
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Submitting to Central Log...";
 
-            const actionLabel = action === 'PICKUP' ? 'Pick-Up' : 'Drop-Off';
-            showToast(`${employeeName} completed ${actionLabel}!`, 'success');
-            renderLogTable();
+            // Send to Google Sheet
+            fetch(webAppUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            }).then(() => {
+                submitBtn.disabled = false;
+                updateActionStyle();
+
+                const actionLabel = action === 'PICKUP' ? 'Pick-Up' : 'Drop-Off';
+                showToast(`${employeeName} completed ${actionLabel}!`, 'success');
+
+                // Reset form fields
+                document.getElementById('employeeName').value = '';
+                document.getElementById('projectSite').value = '';
+                document.getElementById('location').selectedIndex = 0;
+                document.getElementById('itemDescription').value = '';
+                removeSelectedPhoto();
+                renderLogTable();
+            }).catch(error => {
+                submitBtn.disabled = false;
+                updateActionStyle();
+                console.error("Error:", error);
+                showToast('Network error, but saved locally.', 'error');
+                renderLogTable();
+            });
         }
 
         // Toast Notification Function
@@ -544,20 +598,20 @@
             document.getElementById('stat-today-dropoffs').innerText = todayDropoffCount;
             document.getElementById('stat-total').innerText = logs.length;
 
-            // Filter Logs for Display
+            // Filter Logs
             const filteredLogs = logs.filter(log => {
-                const matchesSearch = log.employeeName.toLowerCase().includes(searchQuery) ||
-                                      log.projectSite.toLowerCase().includes(searchQuery) ||
-                                      log.location.toLowerCase().includes(searchQuery) ||
-                                      log.itemDescription.toLowerCase().includes(searchQuery);
-                
-                let matchesStatus = (filterStatus === 'ALL') || (log.action === filterStatus);
-                let matchesLoc = (filterLocation === 'ALL') || (log.location === filterLocation);
+                const matchesSearch = 
+                    log.employeeName.toLowerCase().includes(searchQuery) ||
+                    log.projectSite.toLowerCase().includes(searchQuery) ||
+                    log.itemDescription.toLowerCase().includes(searchQuery) ||
+                    log.location.toLowerCase().includes(searchQuery);
 
-                return matchesSearch && matchesStatus && matchesLoc;
+                const matchesStatus = (filterStatus === 'ALL' || log.action === filterStatus);
+                const matchesLocation = (filterLocation === 'ALL' || log.location === filterLocation);
+
+                return matchesSearch && matchesStatus && matchesLocation;
             });
 
-            // Render Table Rows
             tableBody.innerHTML = '';
 
             if (filteredLogs.length === 0) {
@@ -568,129 +622,50 @@
             }
 
             filteredLogs.forEach(log => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-slate-50 transition';
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
 
-                const isPickup = log.action === 'PICKUP';
-                const formattedDate = new Date(log.timestamp).toLocaleString();
-                
+                const actionBadge = log.action === 'PICKUP' 
+                    ? '<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-700">Pick-Up</span>' 
+                    : '<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700">Drop-Off</span>';
+
                 const photoCell = log.photo 
-                    ? `<button onclick="openImageModal('${log.photo}', '${escapeHTML(log.employeeName)} - ${escapeHTML(log.itemDescription)}')" class="group relative inline-block focus:outline-none">
-                            <img src="${log.photo}" alt="Thumb" class="w-9 h-9 rounded-lg object-cover border border-slate-300 shadow-sm group-hover:scale-105 transition">
-                       </button>`
-                    : `<span class="text-slate-300 text-xs">—</span>`;
+                    ? `<button onclick="openImageModal('${log.photo}')" class="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 inline-block hover:opacity-80 transition"><img src="${log.photo}" class="w-full h-full object-cover" /></button>` 
+                    : '<span class="text-slate-300 text-xs">No Photo</span>';
 
-                row.innerHTML = `
-                    <td class="py-3.5 px-4 font-semibold">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${isPickup ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
-                            <i class="fa-solid ${isPickup ? 'fa-box-open' : 'fa-boxes-stacked'}"></i>
-                            ${isPickup ? 'Pick-Up' : 'Drop-Off'}
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 font-medium text-slate-900">${escapeHTML(log.employeeName)}</td>
-                    <td class="py-3.5 px-4 text-slate-600">${escapeHTML(log.projectSite)}</td>
-                    <td class="py-3.5 px-4 text-slate-600"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg text-xs font-medium">${escapeHTML(log.location)}</span></td>
-                    <td class="py-3.5 px-4 text-slate-800 text-xs max-w-xs truncate">${escapeHTML(log.itemDescription)}</td>
+                const formattedDate = new Date(log.timestamp).toLocaleString();
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4">${actionBadge}</td>
+                    <td class="py-3.5 px-4 font-medium text-slate-800">${escapeHtml(log.employeeName)}</td>
+                    <td class="py-3.5 px-4 text-slate-600">${escapeHtml(log.projectSite)}</td>
+                    <td class="py-3.5 px-4 text-slate-600">${escapeHtml(log.location)}</td>
+                    <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate">${escapeHtml(log.itemDescription)}</td>
                     <td class="py-3.5 px-4">${photoCell}</td>
-                    <td class="py-3.5 px-4 text-slate-500 text-xs whitespace-nowrap">${formattedDate}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-500">${formattedDate}</td>
                     <td class="py-3.5 px-4 text-right">
-                        <button onclick="deleteLog(${log.id})" class="text-slate-400 hover:text-rose-600 transition p-1" title="Delete record">
-                            <i class="fa-solid fa-xmark"></i>
+                        <button onclick="deleteLog(${log.id})" class="text-slate-400 hover:text-rose-600 transition p-1" title="Delete entry">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
                         </button>
                     </td>
                 `;
-                tableBody.appendChild(row);
+                tableBody.appendChild(tr);
             });
         }
 
-        // Delete Single Entry
         function deleteLog(id) {
-            logs = logs.filter(item => item.id !== id);
+            logs = logs.filter(l => l.id !== id);
             localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
             renderLogTable();
-            showToast('Transfer log record removed.', 'success');
+            showToast('Entry removed from dashboard.', 'success');
         }
 
-        // Clear All Logs
         function clearLogs() {
-            if (logs.length === 0) return;
-            if (window.confirm("Are you sure you want to clear ALL item pick-up and drop-off history logs?")) {
+            if (confirm('Are you sure you want to clear all local dashboard logs?')) {
                 logs = [];
                 localStorage.removeItem('qr_item_transfer_logs');
                 renderLogTable();
-                showToast('All transaction logs cleared.', 'success');
+                showToast('All local logs cleared.', 'success');
             }
-        }
-
-        // Export Log to CSV
-        function exportToCSV() {
-            if (logs.length === 0) {
-                showToast('No transaction data available to export.', 'error');
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,ID,Action,Employee / Driver Name,Project Site,Location Zone,Item Description,Photo Attached,Timestamp\n";
-            logs.forEach(log => {
-                const row = [
-                    log.id,
-                    log.action,
-                    `"${log.employeeName.replace(/"/g, '""')}"`,
-                    `"${log.projectSite.replace(/"/g, '""')}"`,
-                    `"${log.location.replace(/"/g, '""')}"`,
-                    `"${log.itemDescription.replace(/"/g, '""')}"`,
-                    log.photo ? "YES" : "NO",
-                    `"${new Date(log.timestamp).toLocaleString()}"`
-                ].join(",");
-                csvContent += row + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Equipment_Transfer_Log_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Dynamic QR Generator Function
-        function generateQRCode(url) {
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = ''; // Clear existing
-            
-            qrGenerator = new QRCode(qrContainer, {
-                text: url,
-                width: 200,
-                height: 200,
-                colorDark : "#0f172a",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        }
-
-        // Edit QR target URL
-        function editTargetUrl() {
-            const input = document.getElementById('target-url-input');
-            const newUrl = prompt("Enter custom form URL for QR Code:", input.value);
-            if (newUrl && newUrl.trim() !== "") {
-                input.value = newUrl.trim();
-                generateQRCode(newUrl.trim());
-                showToast('QR Code updated!', 'success');
-            }
-        }
-
-        // Utility: HTML Escape
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
-        }
-    </script>
 </body>
 </html>
