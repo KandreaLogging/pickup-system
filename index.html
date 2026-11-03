@@ -42,13 +42,6 @@
         </div>
     </header>
 
-    <div id="toast" class="fixed top-20 right-4 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
-        <div id="toast-body" class="flex items-center gap-3 px-5 py-3 rounded-xl shadow-xl text-white font-medium bg-emerald-600">
-            <i id="toast-icon" class="fa-solid fa-circle-check text-xl"></i>
-            <span id="toast-msg">Action processed successfully!</span>
-        </div>
-    </div>
-
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- FORM TAB -->
@@ -134,36 +127,47 @@
             </div>
         </section>
 
-        <!-- DASHBOARD TAB -->
+        <!-- DASHBOARD TAB (LIVE SHEET DATA) -->
         <section id="view-dashboard" class="hidden space-y-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 class="text-lg font-bold mb-4">Recent Local Logs</h3>
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b text-xs font-bold uppercase text-slate-500">
-                            <th class="py-2 px-3">Action</th>
-                            <th class="py-2 px-3">Employee</th>
-                            <th class="py-2 px-3">Project</th>
-                            <th class="py-2 px-3">Description</th>
-                            <th class="py-2 px-3">Time</th>
-                        </tr>
-                    </thead>
-                    <tbody id="log-table-body" class="divide-y divide-slate-100"></tbody>
-                </table>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">Live Central Log (Google Sheet)</h3>
+                    <button onclick="fetchLiveLogs()" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-xs font-semibold transition flex items-center gap-1">
+                        <i class="fa-solid fa-rotate"></i> Refresh Data
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b text-xs font-bold uppercase text-slate-500">
+                                <th class="py-2 px-3">Date & Time</th>
+                                <th class="py-2 px-3">Action</th>
+                                <th class="py-2 px-3">Employee</th>
+                                <th class="py-2 px-3">Project</th>
+                                <th class="py-2 px-3">Location</th>
+                                <th class="py-2 px-3">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body" class="divide-y divide-slate-100">
+                            <tr>
+                                <td colspan="6" class="py-6 text-center text-slate-400">Click Dashboard or Refresh to load live logs...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
     </main>
 
     <script>
-        let logs = JSON.parse(localStorage.getItem('qr_item_transfer_logs')) || [];
+        const webAppUrl = "https://script.google.com/macros/s/AKfycbzgyecavmfQ3qJe8XC7j_NGP8sB3W9LF60SftayBW59-RmkbwFL27rmjChi_N_uvysxSg/exec";
+        const liveUrl = "https://kandrealogging.github.io/pickup-system/";
         let currentPhotoBase64 = null;
 
         window.onload = function() {
-            const liveUrl = "https://kandrealogging.github.io/pickup-system/";
             document.getElementById('target-url-input').value = liveUrl;
             generateQRCode(liveUrl);
-            renderLogTable();
         };
 
         function generateQRCode(url) {
@@ -196,7 +200,7 @@
                     btnEl.className = "px-3 py-2 rounded-lg hover:bg-indigo-600 text-indigo-100 transition flex items-center gap-2";
                 }
             });
-            if (tabName === 'dashboard') renderLogTable();
+            if (tabName === 'dashboard') fetchLiveLogs();
         }
 
         function updateActionStyle() {
@@ -228,23 +232,18 @@
             const itemDescription = document.getElementById('itemDescription').value.trim();
             const action = document.querySelector('input[name="action"]:checked').value;
 
-            const webAppUrl = "https://script.google.com/macros/s/AKfycbzgyecavmfQ3qJe8XC7j_NGP8sB3W9LF60SftayBW59-RmkbwFL27rmjChi_N_uvysxSg/exec";
-
             const formData = {
                 action: action === 'PICKUP' ? 'Pick-Up' : 'Drop-Off',
                 driverName: employeeName,
                 projectSite: projectSite,
                 itemDesc: itemDescription,
                 location: location,
-                photoUrl: currentPhotoBase64 || "No Photo"
+                photoUrl: currentPhotoBase64 : "No Photo"
             };
-
-            logs.unshift({ id: Date.now(), employeeName, projectSite, itemDescription, action, timestamp: new Date().toISOString() });
-            localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
 
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerText = "Submitting...";
+            submitBtn.innerText = "Submitting to Central Log...";
 
             fetch(webAppUrl, {
                 method: "POST",
@@ -257,30 +256,49 @@
                 alert("Submitted successfully to Google Sheet!");
                 document.getElementById('attendance-form').reset();
                 currentPhotoBase64 = null;
-                renderLogTable();
             }).catch(error => {
                 submitBtn.disabled = false;
                 updateActionStyle();
                 console.error("Error:", error);
-                alert("Saved locally. Check connection for cloud sync.");
-                renderLogTable();
+                alert("Error submitting entry. Please check connection.");
             });
         }
 
-        function renderLogTable() {
+        function fetchLiveLogs() {
             const tableBody = document.getElementById('log-table-body');
-            tableBody.innerHTML = '';
-            logs.forEach(log => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-2.5 px-3 font-semibold">${log.action}</td>
-                    <td class="py-2.5 px-3">${log.employeeName}</td>
-                    <td class="py-2.5 px-3">${log.projectSite}</td>
-                    <td class="py-2.5 px-3">${log.itemDescription}</td>
-                    <td class="py-2.5 px-3 text-xs text-slate-500">${new Date(log.timestamp).toLocaleTimeString()}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
+            tableBody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">Loading live entries from Google Sheet...</td></tr>';
+
+            fetch(webAppUrl)
+                .then(res => res.json())
+                .then(data => {
+                    tableBody.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">No entries recorded in Google Sheet yet.</td></tr>';
+                        return;
+                    }
+                    // Show newest logs at the top
+                    data.reverse().forEach(log => {
+                        const tr = document.createElement('tr');
+                        const formattedDate = log.timestamp ? new Date(log.timestamp).toLocaleString() : 'N/A';
+                        const actionBadge = log.action === 'Pick-Up' 
+                            ? '<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-700">Pick-Up</span>'
+                            : '<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-700">Drop-Off</span>';
+
+                        tr.innerHTML = `
+                            <td class="py-2.5 px-3 text-xs text-slate-500">${formattedDate}</td>
+                            <td class="py-2.5 px-3">${actionBadge}</td>
+                            <td class="py-2.5 px-3 font-medium text-slate-800">${log.employeeName || ''}</td>
+                            <td class="py-2.5 px-3 text-slate-600">${log.projectSite || ''}</td>
+                            <td class="py-2.5 px-3 text-slate-600">${log.location || ''}</td>
+                            <td class="py-2.5 px-3 text-slate-600">${log.itemDescription || ''}</td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    console.error("Fetch error:", err);
+                    tableBody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-rose-500">Failed to load live data. Check Google Apps Script deployment permissions.</td></tr>';
+                });
         }
     </script>
 </body>
