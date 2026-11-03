@@ -4,17 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Pick-Up & Drop-Off Tracker</title>
-    <!-- Tailwind CSS for styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QR Code Generator JS Library -->
+    <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Printable area styling */
         @media print {
             body * { visibility: hidden; }
             #printable-qr-section, #printable-qr-section * { visibility: visible; }
@@ -25,7 +23,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header / Navigation -->
+    <!-- Header Navigation -->
     <header class="bg-indigo-700 text-white shadow-lg no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -33,23 +31,22 @@
                     <i class="fa-solid font-bold fa-boxes-packing text-2xl text-indigo-200"></i>
                     <span class="font-bold text-xl tracking-tight">EquipTrack QR Log</span>
                 </div>
-                <!-- Navigation Tabs -->
-                <nav class="flex space-x-1 sm:space-x-4 text-sm font-medium">
+                <nav class="flex space-x-2 text-sm font-medium">
                     <button onclick="switchTab('form')" id="tab-btn-form" class="px-3 py-2 rounded-lg bg-indigo-800 text-white transition flex items-center gap-2">
-                        <i class="fa-solid fa-truck-ramp-box"></i> <span class="hidden sm:inline">Pick-Up / Drop-Off</span> Form
+                        <i class="fa-solid fa-truck-ramp-box"></i> Form
                     </button>
                     <button onclick="switchTab('qr')" id="tab-btn-qr" class="px-3 py-2 rounded-lg hover:bg-indigo-600 text-indigo-100 transition flex items-center gap-2">
                         <i class="fa-solid fa-qrcode"></i> QR Display
                     </button>
                     <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="px-3 py-2 rounded-lg hover:bg-indigo-600 text-indigo-100 transition flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line"></i> Dashboard Log
+                        <i class="fa-solid fa-chart-line"></i> Dashboard
                     </button>
                 </nav>
             </div>
         </div>
     </header>
 
-    <!-- Notification Alert Banner -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed top-20 right-4 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
         <div id="toast-body" class="flex items-center gap-3 px-5 py-3 rounded-xl shadow-xl text-white font-medium bg-emerald-600">
             <i id="toast-icon" class="fa-solid fa-circle-check text-xl"></i>
@@ -57,10 +54,10 @@
         </div>
     </div>
 
-    <!-- Main Container -->
+    <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- TAB 1: FORM -->
+        <!-- FORM TAB -->
         <section id="view-form" class="max-w-xl mx-auto">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="bg-slate-900 text-white p-6 text-center">
@@ -69,7 +66,6 @@
                 </div>
 
                 <form id="attendance-form" onsubmit="handleFormSubmit(event)" class="p-6 sm:p-8 space-y-5">
-                    <!-- Action Toggle Buttons -->
                     <div>
                         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Select Action</label>
                         <div class="grid grid-cols-2 gap-3">
@@ -88,236 +84,89 @@
                         </div>
                     </div>
 
-                    <!-- Employee Name -->
                     <div>
-                        <label for="employeeName" class="block text-sm font-medium text-slate-700 mb-1">Employee / Driver Name <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-user-gear"></i></span>
-                            <input type="text" id="employeeName" required placeholder="e.g. John Smith" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
+                        <label for="employeeName" class="block text-sm font-medium text-slate-700 mb-1">Employee / Driver Name *</label>
+                        <input type="text" id="employeeName" required placeholder="e.g. John Smith" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
 
-                    <!-- Project Site -->
                     <div>
-                        <label for="projectSite" class="block text-sm font-medium text-slate-700 mb-1">Project # / Site Name <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-location-dot"></i></span>
-                            <input type="text" id="projectSite" required placeholder="e.g. PRJ-2026-08 / North Industrial Plant" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        </div>
+                        <label for="projectSite" class="block text-sm font-medium text-slate-700 mb-1">Project # / Site Name *</label>
+                        <input type="text" id="projectSite" required placeholder="e.g. PRJ-2026-08" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
 
-                    <!-- Location Dropdown -->
                     <div>
-                        <label for="location" class="block text-sm font-medium text-slate-700 mb-1">Location / Yard Zone <span class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-warehouse"></i></span>
-                            <select id="location" required class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white transition">
-                                <option value="" disabled selected>Select Location Zone</option>
-                                <option value="Yard / Shop">Yard / Shop</option>
-                                <option value="Main Warehouse">Main Warehouse</option>
-                                <option value="Central Receiving & Quarantine Zone">Central Receiving & Quarantine Zone</option>
-                                <option value="Laydown Yard">Laydown Yard</option>
-                                <option value="North Yard">North Yard</option>
-                                <option value="South Yard">South Yard</option>
-                                <option value="Off-site / Customer Location">Off-site / Customer Location</option>
-                            </select>
-                        </div>
+                        <label for="location" class="block text-sm font-medium text-slate-700 mb-1">Location / Yard Zone *</label>
+                        <select id="location" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="" disabled selected>Select Location Zone</option>
+                            <option value="Yard / Shop">Yard / Shop</option>
+                            <option value="Main Warehouse">Main Warehouse</option>
+                            <option value="Central Receiving & Quarantine Zone">Central Receiving & Quarantine Zone</option>
+                            <option value="Laydown Yard">Laydown Yard</option>
+                            <option value="North Yard">North Yard</option>
+                            <option value="South Yard">South Yard</option>
+                            <option value="Off-site / Customer Location">Off-site / Customer Location</option>
+                        </select>
                     </div>
 
-                    <!-- Item Description -->
                     <div>
-                        <label for="itemDescription" class="block text-sm font-medium text-slate-700 mb-1">Item Description <span class="text-rose-500">*</span></label>
-                        <textarea id="itemDescription" rows="2" required placeholder="e.g. 3x Scaffolding frames, Dewalt Drill Kit, 5x Insulation Rolls..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></textarea>
+                        <label for="itemDescription" class="block text-sm font-medium text-slate-700 mb-1">Item Description *</label>
+                        <textarea id="itemDescription" rows="2" required placeholder="e.g. Scaffolding frames, Drill Kit..." class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
 
-                    <!-- Photo Upload -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Photo / Picture Attachment <span class="text-slate-400 font-normal">(Optional)</span></label>
-                        <div class="flex items-center gap-3">
-                            <label class="flex-1 cursor-pointer flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-xl p-3 hover:border-indigo-500 hover:bg-slate-50 transition text-sm font-medium text-slate-600">
-                                <i class="fa-solid fa-camera text-indigo-600 text-lg"></i>
-                                <span id="upload-label-text">Take or Upload Photo</span>
-                                <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhotoSelect(event)" class="hidden">
-                            </label>
-                            <div id="photo-preview-container" class="hidden relative group">
-                                <img id="photo-preview" src="" alt="Preview" class="w-12 h-12 rounded-lg object-cover border border-slate-300 shadow-sm">
-                                <button type="button" onclick="removeSelectedPhoto()" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow hover:bg-rose-700 transition" title="Remove Photo">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </div>
-                        </div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Photo Attachment (Optional)</label>
+                        <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhotoSelect(event)" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                     </div>
 
-                    <!-- Timestamp Preview -->
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                        <span><i class="fa-regular fa-clock mr-1"></i> Log Timestamp:</span>
-                        <span id="live-clock" class="font-semibold text-slate-700"></span>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" id="submit-btn" class="w-full py-3.5 px-6 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-[0.99] transition shadow-lg shadow-amber-600/20">
+                    <button type="submit" id="submit-btn" class="w-full py-3.5 px-6 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 transition shadow-lg">
                         Submit Item Pick-Up
                     </button>
                 </form>
             </div>
         </section>
 
-        <!-- TAB 2: QR DISPLAY VIEW -->
+        <!-- QR DISPLAY TAB -->
         <section id="view-qr" class="hidden max-w-xl mx-auto">
             <div id="printable-qr-section" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 mb-3 no-print">
-                    <i class="fa-solid fa-qrcode text-xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800">Scan to Pick-Up / Drop-Off</h2>
-                <p class="text-slate-500 text-sm mt-1 max-w-xs mx-auto">Scan with a phone camera to open the logging form.</p>
-
-                <!-- Dynamic QR Code Container -->
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Scan to Pick-Up / Drop-Off</h2>
                 <div class="my-6 flex justify-center">
                     <div id="qrcode" class="p-4 bg-white border-2 border-slate-200 rounded-2xl shadow-inner inline-block"></div>
                 </div>
-
-                <!-- URL Edit Control -->
-                <div class="no-print bg-slate-50 p-3 rounded-xl border border-slate-200 max-w-md mx-auto mb-6 text-left">
-                    <label class="block text-xs font-semibold text-slate-500 mb-1">Target Form URL:</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="target-url-input" class="w-full bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        <button onclick="updateTargetUrlFromInput()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition">Update QR</button>
-                    </div>
+                <div class="no-print mb-4">
+                    <input type="text" id="target-url-input" class="w-full bg-slate-50 border border-slate-300 text-xs rounded-lg px-3 py-2 mb-2">
+                    <button onclick="updateTargetUrlFromInput()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-medium">Update QR Code</button>
                 </div>
-
-                <!-- Print Control -->
-                <div class="no-print flex justify-center gap-3">
-                    <button onclick="window.print()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-semibold transition flex items-center gap-2">
-                        <i class="fa-solid fa-print"></i> Print QR Poster
-                    </button>
-                </div>
+                <button onclick="window.print()" class="no-print px-4 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold">Print QR Poster</button>
             </div>
         </section>
 
-        <!-- TAB 3: DASHBOARD LOG -->
+        <!-- DASHBOARD TAB -->
         <section id="view-dashboard" class="hidden space-y-6">
-            <!-- Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-box-open"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Items Out on Pick-Up</p>
-                        <h3 id="stat-pickups" class="text-3xl font-extrabold text-slate-800">0</h3>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-boxes-stacked"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Drop-Offs Today</p>
-                        <h3 id="stat-today-dropoffs" class="text-3xl font-extrabold text-slate-800">0</h3>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-receipt"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Transactions</p>
-                        <h3 id="stat-total" class="text-3xl font-extrabold text-slate-800">0</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-grow max-w-2xl">
-                    <div class="relative w-full">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
-                        <input type="text" id="search-input" onkeyup="renderLogTable()" placeholder="Search employee, project, item..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <select id="filter-status" onchange="renderLogTable()" class="bg-slate-50 border border-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none">
-                        <option value="ALL">All Actions</option>
-                        <option value="PICKUP">Pick-Up</option>
-                        <option value="DROPOFF">Drop-Off</option>
-                    </select>
-                    <select id="filter-location" onchange="renderLogTable()" class="bg-slate-50 border border-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none">
-                        <option value="ALL">All Locations</option>
-                        <option value="Yard / Shop">Yard / Shop</option>
-                        <option value="Main Warehouse">Main Warehouse</option>
-                        <option value="Central Receiving & Quarantine Zone">Central Receiving & Quarantine Zone</option>
-                        <option value="Laydown Yard">Laydown Yard</option>
-                        <option value="North Yard">North Yard</option>
-                        <option value="South Yard">South Yard</option>
-                        <option value="Off-site / Customer Location">Off-site / Customer Location</option>
-                    </select>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="exportToCSV()" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-900 transition flex items-center gap-2">
-                        <i class="fa-solid fa-file-csv"></i> Export CSV
-                    </button>
-                    <button onclick="clearLogs()" class="px-3 py-2 bg-rose-50 text-rose-600 rounded-xl text-sm font-semibold hover:bg-rose-100 transition" title="Clear logs">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase text-slate-500 tracking-wider">
-                                <th class="py-3.5 px-4">Action</th>
-                                <th class="py-3.5 px-4">Employee</th>
-                                <th class="py-3.5 px-4">Project / Site</th>
-                                <th class="py-3.5 px-4">Location</th>
-                                <th class="py-3.5 px-4">Description</th>
-                                <th class="py-3.5 px-4">Photo</th>
-                                <th class="py-3.5 px-4">Date & Time</th>
-                                <th class="py-3.5 px-4 text-right">Remove</th>
-                            </tr>
-                        </thead>
-                        <tbody id="log-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
-                    </table>
-                </div>
-                <div id="empty-state" class="hidden py-12 text-center text-slate-400">
-                    <i class="fa-solid fa-folder-open text-4xl mb-3 block"></i>
-                    <p>No pick-up or drop-off records found.</p>
-                </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h3 class="text-lg font-bold mb-4">Recent Local Logs</h3>
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b text-xs font-bold uppercase text-slate-500">
+                            <th class="py-2 px-3">Action</th>
+                            <th class="py-2 px-3">Employee</th>
+                            <th class="py-2 px-3">Project</th>
+                            <th class="py-2 px-3">Description</th>
+                            <th class="py-2 px-3">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body" class="divide-y divide-slate-100"></tbody>
+                </table>
             </div>
         </section>
 
     </main>
 
-    <!-- Fullscreen Image Modal -->
-    <div id="image-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeImageModal()">
-        <div class="relative bg-white rounded-2xl overflow-hidden max-w-2xl w-full shadow-2xl border border-slate-700" onclick="event.stopPropagation()">
-            <div class="p-4 bg-slate-900 text-white flex justify-between items-center">
-                <span id="modal-title" class="font-semibold text-sm">Photo Proof</span>
-                <button onclick="closeImageModal()" class="text-slate-400 hover:text-white transition p-1 text-lg"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-4 bg-slate-950 flex justify-center items-center max-h-[75vh]">
-                <img id="modal-image" src="" alt="Full Preview" class="max-h-[70vh] w-auto max-w-full rounded-lg object-contain">
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 no-print">
-        <p>EquipTrack Employee Pick-Up & Drop-Off System &copy; Central Cloud Sync Mode</p>
-    </footer>
-
-    <!-- JavaScript Application Logic -->
+    <!-- JavaScript -->
     <script>
         let logs = JSON.parse(localStorage.getItem('qr_item_transfer_logs')) || [];
-        let qrGenerator = null;
         let currentPhotoBase64 = null;
 
         window.onload = function() {
-            updateClock();
-            setInterval(updateClock, 1000);
-
             const currentUrl = window.location.href;
             document.getElementById('target-url-input').value = currentUrl;
             generateQRCode(currentUrl);
@@ -327,7 +176,7 @@
         function generateQRCode(url) {
             const qrContainer = document.getElementById("qrcode");
             qrContainer.innerHTML = "";
-            qrGenerator = new QRCode(qrContainer, {
+            new QRCode(qrContainer, {
                 text: url,
                 width: 200,
                 height: 200,
@@ -339,98 +188,42 @@
 
         function updateTargetUrlFromInput() {
             const newUrl = document.getElementById('target-url-input').value.trim();
-            if (newUrl) {
-                generateQRCode(newUrl);
-                showToast('QR Code updated successfully!', 'success');
+            if (newUrl) generateQRCode(newUrl);
+        }
+
+        function switchTab(tabName) {
+            ['form', 'qr', 'dashboard'].forEach(view => {
+                const viewEl = document.getElementById(`view-${view}`);
+                const btnEl = document.getElementById(`tab-btn-${view}`);
+                if (view === tabName) {
+                    viewEl.classList.remove('hidden');
+                    btnEl.className = "px-3 py-2 rounded-lg bg-indigo-800 text-white transition flex items-center gap-2";
+                } else {
+                    viewEl.classList.add('hidden');
+                    btnEl.className = "px-3 py-2 rounded-lg hover:bg-indigo-600 text-indigo-100 transition flex items-center gap-2";
+                }
+            });
+            if (tabName === 'dashboard') renderLogTable();
+        }
+
+        function updateActionStyle() {
+            const action = document.querySelector('input[name="action"]:checked').value;
+            const submitBtn = document.getElementById('submit-btn');
+            if (action === 'PICKUP') {
+                submitBtn.className = 'w-full py-3.5 px-6 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 transition shadow-lg';
+                submitBtn.innerText = 'Submit Item Pick-Up';
+            } else {
+                submitBtn.className = 'w-full py-3.5 px-6 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg';
+                submitBtn.innerText = 'Submit Item Drop-Off';
             }
         }
 
         function handlePhotoSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
-                    canvas.height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
-
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-                    document.getElementById('photo-preview').src = currentPhotoBase64;
-                    document.getElementById('photo-preview-container').classList.remove('hidden');
-                    document.getElementById('upload-label-text').innerText = 'Change Photo';
-                };
-                img.src = e.target.result;
-            };
+            reader.onload = function(e) { currentPhotoBase64 = e.target.result; };
             reader.readAsDataURL(file);
-        }
-
-        function removeSelectedPhoto() {
-            currentPhotoBase64 = null;
-            document.getElementById('photoInput').value = '';
-            document.getElementById('photo-preview-container').classList.add('hidden');
-            document.getElementById('photo-preview').src = '';
-            document.getElementById('upload-label-text').innerText = 'Take or Upload Photo';
-        }
-
-        function openImageModal(photoUrl, title = 'Photo Proof') {
-            document.getElementById('modal-image').src = photoUrl;
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('image-modal').classList.remove('hidden');
-        }
-
-        function closeImageModal() {
-            document.getElementById('image-modal').classList.add('hidden');
-            document.getElementById('modal-image').src = '';
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-            const liveClockEl = document.getElementById('live-clock');
-            if (liveClockEl) liveClockEl.innerText = timeString;
-        }
-
-        function switchTab(tabName) {
-            const views = ['form', 'qr', 'dashboard'];
-            views.forEach(view => {
-                const viewEl = document.getElementById(`view-${view}`);
-                const btnEl = document.getElementById(`tab-btn-${view}`);
-                
-                if (view === tabName) {
-                    viewEl.classList.remove('hidden');
-                    btnEl.classList.add('bg-indigo-800', 'text-white');
-                    btnEl.classList.remove('hover:bg-indigo-600', 'text-indigo-100');
-                } else {
-                    viewEl.classList.add('hidden');
-                    btnEl.classList.remove('bg-indigo-800');
-                    btnEl.classList.add('hover:bg-indigo-600', 'text-indigo-100');
-                }
-            });
-
-            if (tabName === 'dashboard') {
-                renderLogTable();
-            }
-        }
-
-        function updateActionStyle() {
-            const action = document.querySelector('input[name="action"]:checked').value;
-            const submitBtn = document.getElementById('submit-btn');
-            
-            if (action === 'PICKUP') {
-                submitBtn.className = 'w-full py-3.5 px-6 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-[0.99] transition shadow-lg shadow-amber-600/20';
-                submitBtn.innerText = 'Submit Item Pick-Up';
-            } else {
-                submitBtn.className = 'w-full py-3.5 px-6 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] transition shadow-lg shadow-emerald-600/20';
-                submitBtn.innerText = 'Submit Item Drop-Off';
-            }
         }
 
         function handleFormSubmit(e) {
@@ -441,13 +234,8 @@
             const location = document.getElementById('location').value;
             const itemDescription = document.getElementById('itemDescription').value.trim();
             const action = document.querySelector('input[name="action"]:checked').value;
-            const timestamp = new Date().toISOString();
 
-            if (!employeeName || !projectSite || !location || !itemDescription) {
-                showToast('Please fill out all required fields.', 'error');
-                return;
-            }
-
+            // Your Google Apps Script Web App URL
             const webAppUrl = "https://script.google.com/macros/s/AKfycbzgyecavmfQ3qJe8XC7j_NGP8sB3W9LF60SftayBW59-RmkbwFL27rmjChi_N_uvysxSg/exec";
 
             const formData = {
@@ -459,27 +247,13 @@
                 photoUrl: currentPhotoBase64 ? "Attached" : "No Photo"
             };
 
-            const newEntry = {
-                id: Date.now(),
-                employeeName,
-                projectSite,
-                location,
-                itemDescription,
-                photo: currentPhotoBase64,
-                action,
-                timestamp
-            };
-
-            logs.unshift(newEntry);
-            try {
-                localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
-            } catch (err) {
-                console.warn('Local storage limit reached');
-            }
+            // Save locally for dashboard view
+            logs.unshift({ id: Date.now(), employeeName, projectSite, itemDescription, action, timestamp: new Date().toISOString() });
+            localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
 
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerText = "Submitting to Central Log...";
+            submitBtn.innerText = "Submitting...";
 
             fetch(webAppUrl, {
                 method: "POST",
@@ -489,163 +263,33 @@
             }).then(() => {
                 submitBtn.disabled = false;
                 updateActionStyle();
-
-                const actionLabel = action === 'PICKUP' ? 'Pick-Up' : 'Drop-Off';
-                showToast(`${employeeName} completed ${actionLabel}!`, 'success');
-
-                document.getElementById('employeeName').value = '';
-                document.getElementById('projectSite').value = '';
-                document.getElementById('location').selectedIndex = 0;
-                document.getElementById('itemDescription').value = '';
-                removeSelectedPhoto();
+                alert("Submitted successfully to Google Sheet!");
+                document.getElementById('attendance-form').reset();
+                currentPhotoBase64 = null;
                 renderLogTable();
             }).catch(error => {
                 submitBtn.disabled = false;
                 updateActionStyle();
                 console.error("Error:", error);
-                showToast('Network error, saved locally.', 'error');
+                alert("Saved locally. Check connection for cloud sync.");
                 renderLogTable();
             });
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastBody = document.getElementById('toast-body');
-            const toastMsg = document.getElementById('toast-msg');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastMsg.innerText = message;
-
-            if (type === 'success') {
-                toastBody.className = 'flex items-center gap-3 px-5 py-3 rounded-xl shadow-xl text-white font-medium bg-emerald-600';
-                toastIcon.className = 'fa-solid fa-circle-check text-xl';
-            } else {
-                toastBody.className = 'flex items-center gap-3 px-5 py-3 rounded-xl shadow-xl text-white font-medium bg-rose-600';
-                toastIcon.className = 'fa-solid fa-triangle-exclamation text-xl';
-            }
-
-            toast.classList.remove('translate-y-[-100px]', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-[-100px]', 'opacity-0');
-            }, 3000);
         }
 
         function renderLogTable() {
             const tableBody = document.getElementById('log-table-body');
-            const emptyState = document.getElementById('empty-state');
-            const searchQuery = document.getElementById('search-input').value.toLowerCase();
-            const filterStatus = document.getElementById('filter-status').value;
-            const filterLocation = document.getElementById('filter-location').value;
-
-            let pickupCount = 0;
-            let todayDropoffCount = 0;
-            const todayStr = new Date().toDateString();
-
-            logs.forEach(log => {
-                if (log.action === 'PICKUP') pickupCount++;
-                const logDate = new Date(log.timestamp).toDateString();
-                if (logDate === todayStr && log.action === 'DROPOFF') todayDropoffCount++;
-            });
-
-            document.getElementById('stat-pickups').innerText = pickupCount;
-            document.getElementById('stat-today-dropoffs').innerText = todayDropoffCount;
-            document.getElementById('stat-total').innerText = logs.length;
-
-            const filteredLogs = logs.filter(log => {
-                const matchesSearch = 
-                    log.employeeName.toLowerCase().includes(searchQuery) ||
-                    log.projectSite.toLowerCase().includes(searchQuery) ||
-                    log.itemDescription.toLowerCase().includes(searchQuery) ||
-                    log.location.toLowerCase().includes(searchQuery);
-
-                const matchesStatus = (filterStatus === 'ALL' || log.action === filterStatus);
-                const matchesLocation = (filterLocation === 'ALL' || log.location === filterLocation);
-
-                return matchesSearch && matchesStatus && matchesLocation;
-            });
-
             tableBody.innerHTML = '';
-
-            if (filteredLogs.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
-
-            filteredLogs.forEach(log => {
+            logs.forEach(log => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
-
-                const actionBadge = log.action === 'PICKUP' 
-                    ? '<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-700">Pick-Up</span>' 
-                    : '<span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700">Drop-Off</span>';
-
-                const photoCell = log.photo 
-                    ? `<button onclick="openImageModal('${log.photo}')" class="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 inline-block hover:opacity-80 transition"><img src="${log.photo}" class="w-full h-full object-cover" /></button>` 
-                    : '<span class="text-slate-300 text-xs">No Photo</span>';
-
-                const formattedDate = new Date(log.timestamp).toLocaleString();
-
                 tr.innerHTML = `
-                    <td class="py-3.5 px-4">${actionBadge}</td>
-                    <td class="py-3.5 px-4 font-medium text-slate-800">${escapeHtml(log.employeeName)}</td>
-                    <td class="py-3.5 px-4 text-slate-600">${escapeHtml(log.projectSite)}</td>
-                    <td class="py-3.5 px-4 text-slate-600">${escapeHtml(log.location)}</td>
-                    <td class="py-3.5 px-4 text-slate-600 max-w-xs truncate">${escapeHtml(log.itemDescription)}</td>
-                    <td class="py-3.5 px-4">${photoCell}</td>
-                    <td class="py-3.5 px-4 text-xs text-slate-500">${formattedDate}</td>
-                    <td class="py-3.5 px-4 text-right">
-                        <button onclick="deleteLog(${log.id})" class="text-slate-400 hover:text-rose-600 transition p-1" title="Delete entry">
-                            <i class="fa-solid fa-trash-can text-xs"></i>
-                        </button>
-                    </td>
+                    <td class="py-2.5 px-3 font-semibold">${log.action}</td>
+                    <td class="py-2.5 px-3">${log.employeeName}</td>
+                    <td class="py-2.5 px-3">${log.projectSite}</td>
+                    <td class="py-2.5 px-3">${log.itemDescription}</td>
+                    <td class="py-2.5 px-3 text-xs text-slate-500">${new Date(log.timestamp).toLocaleTimeString()}</td>
                 `;
                 tableBody.appendChild(tr);
             });
-        }
-
-        function deleteLog(id) {
-            logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
-            renderLogTable();
-            showToast('Entry removed from dashboard.', 'success');
-        }
-
-        function clearLogs() {
-            if (confirm('Are you sure you want to clear all local dashboard logs?')) {
-                logs = [];
-                localStorage.removeItem('qr_item_transfer_logs');
-                renderLogTable();
-                showToast('All local logs cleared.', 'success');
-            }
-        }
-
-        function exportToCSV() {
-            if (logs.length === 0) {
-                showToast('No logs available to export.', 'error');
-                return;
-            }
-            let csvContent = "data:text/csv;charset=utf-8,Action,Driver Name,Project/Site,Location,Item Description,Timestamp\n";
-            logs.forEach(log => {
-                csvContent += `"${log.action}","${log.employeeName}","${log.projectSite}","${log.location}","${log.itemDescription}","${log.timestamp}"\n`;
-            });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "pickup_dropoff_logs.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('CSV exported successfully!', 'success');
-        }
-
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, m => map[m]);
         }
     </script>
 </body>
