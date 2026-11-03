@@ -236,7 +236,7 @@
                 projectSite: projectSite,
                 itemDesc: itemDescription,
                 location: location,
-                photoUrl: currentPhotoBase64 ? "Attached" : "No Photo"
+                photoUrl: currentPhotoBase64 || "No Photo"
             };
 
             logs.unshift({ id: Date.now(), employeeName, projectSite, itemDescription, action, timestamp: new Date().toISOString() });
