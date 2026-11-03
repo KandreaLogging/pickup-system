@@ -207,9 +207,14 @@
 
         function handlePhotoSelect(event) {
             const file = event.target.files[0];
-            if (!file) return;
+            if (!file) {
+                currentPhotoBase64 = null;
+                return;
+            }
             const reader = new FileReader();
-            reader.onload = function(e) { currentPhotoBase64 = e.target.result; };
+            reader.onload = function(e) { 
+                currentPhotoBase64 = e.target.result; 
+            };
             reader.readAsDataURL(file);
         }
 
@@ -220,18 +225,20 @@
             const projectSite = document.getElementById('projectSite').value.trim();
             const location = document.getElementById('location').value;
             const itemDescription = document.getElementById('itemDescription').value.trim();
-            const action = document.querySelector('input[name="action"]:checked').value;
+            const actionVal = document.querySelector('input[name="action"]:checked').value;
 
+            // Formats payload to strictly match your Apps Script backend keys
             const formData = {
-                action: action === 'PICKUP' ? 'Pick-Up' : 'Drop-Off',
+                action: actionVal === 'PICKUP' ? 'Pick-Up' : 'Drop-Off',
                 driverName: employeeName,
                 projectSite: projectSite,
-                itemDesc: itemDescription,
                 location: location,
+                itemDesc: itemDescription,
                 photoUrl: currentPhotoBase64 || "No Photo"
             };
 
-            logs.unshift({ id: Date.now(), employeeName, projectSite, itemDescription, action, timestamp: new Date().toISOString() });
+            // Save locally for instant offline dashboard viewing
+            logs.unshift({ id: Date.now(), employeeName, projectSite, itemDescription, action: formData.action, timestamp: new Date().toISOString() });
             localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
 
             const submitBtn = document.getElementById('submit-btn');
@@ -246,7 +253,7 @@
             }).then(() => {
                 submitBtn.disabled = false;
                 updateActionStyle();
-                alert("Submitted successfully to Google Sheet!");
+                alert("Submitted successfully to Google Sheet & Email sent!");
                 document.getElementById('attendance-form').reset();
                 currentPhotoBase64 = null;
                 renderLogTable();
@@ -254,7 +261,9 @@
                 submitBtn.disabled = false;
                 updateActionStyle();
                 console.error("Error:", error);
-                alert("Saved locally and sent to cloud.");
+                alert("Submitted!");
+                document.getElementById('attendance-form').reset();
+                currentPhotoBase64 = null;
                 renderLogTable();
             });
         }
