@@ -167,9 +167,11 @@
         let currentPhotoBase64 = null;
 
         window.onload = function() {
-            const currentUrl = window.location.href;
-            document.getElementById('target-url-input').value = currentUrl;
-            generateQRCode(currentUrl);
+            // https://kandrealogging.github.io/pickup-system/
+            const liveUrl = "https://yourusername.github.io/your-repository-name/";
+            
+            document.getElementById('target-url-input').value = liveUrl;
+            generateQRCode(liveUrl);
             renderLogTable();
         };
 
