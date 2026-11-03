@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Pick-Up & Drop-Off Tracker</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -23,7 +20,6 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header Navigation -->
     <header class="bg-indigo-700 text-white shadow-lg no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -46,7 +42,6 @@
         </div>
     </header>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed top-20 right-4 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
         <div id="toast-body" class="flex items-center gap-3 px-5 py-3 rounded-xl shadow-xl text-white font-medium bg-emerald-600">
             <i id="toast-icon" class="fa-solid fa-circle-check text-xl"></i>
@@ -54,7 +49,6 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- FORM TAB -->
@@ -161,15 +155,12 @@
 
     </main>
 
-    <!-- JavaScript -->
     <script>
         let logs = JSON.parse(localStorage.getItem('qr_item_transfer_logs')) || [];
         let currentPhotoBase64 = null;
 
         window.onload = function() {
-            // https://kandrealogging.github.io/pickup-system/
-            const liveUrl = "https://yourusername.github.io/your-repository-name/";
-            
+            const liveUrl = "https://kandrealogging.github.io/pickup-system/";
             document.getElementById('target-url-input').value = liveUrl;
             generateQRCode(liveUrl);
             renderLogTable();
@@ -237,7 +228,6 @@
             const itemDescription = document.getElementById('itemDescription').value.trim();
             const action = document.querySelector('input[name="action"]:checked').value;
 
-            // Your Google Apps Script Web App URL
             const webAppUrl = "https://script.google.com/macros/s/AKfycbzgyecavmfQ3qJe8XC7j_NGP8sB3W9LF60SftayBW59-RmkbwFL27rmjChi_N_uvysxSg/exec";
 
             const formData = {
@@ -249,7 +239,6 @@
                 photoUrl: currentPhotoBase64 ? "Attached" : "No Photo"
             };
 
-            // Save locally for dashboard view
             logs.unshift({ id: Date.now(), employeeName, projectSite, itemDescription, action, timestamp: new Date().toISOString() });
             localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
 
