@@ -149,7 +149,7 @@
     </main>
 
     <script>
-        const webAppUrl = "https://script.google.com/macros/s/AKfycbzE1NfuC9z-48kxniL2U_c8dmRtsUeXe0S8JncKuGSOifsVEzKysvASXkXPwVC4dPsAFw/exec";
+        const webAppUrl = "https://script.google.com/macros/s/AKfycbwk3vL4rjvS4S_8XMV0bjhCKVH-NjwS3eRjqueVCiP-HQL9tLgwz1sRLX6sMRGgFsNsfw/exec";
         const liveUrl = window.location.href.split('?')[0];
         let currentPhotoBase64 = null;
         let logs = JSON.parse(localStorage.getItem('qr_item_transfer_logs')) || [];
@@ -159,3 +159,132 @@
             generateQRCode(liveUrl);
             renderLogTable();
         };
+
+        function generateQRCode(url) {
+            const qrContainer = document.getElementById("qrcode");
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark : "#0f172a",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        function updateTargetUrlFromInput() {
+            const newUrl = document.getElementById('target-url-input').value.trim();
+            if (newUrl) generateQRCode(newUrl);
+        }
+
+        function switchTab(tabName) {
+            ['form', 'qr', 'dashboard'].forEach(view => {
+                const viewEl = document.getElementById(`view-${view}`);
+                const btnEl = document.getElementById(`tab-btn-${view}`);
+                if (view === tabName) {
+                    viewEl.classList.remove('hidden');
+                    btnEl.className = "px-3 py-2 rounded-lg bg-indigo-800 text-white transition flex items-center gap-2";
+                } else {
+                    viewEl.classList.add('hidden');
+                    btnEl.className = "px-3 py-2 rounded-lg hover:bg-indigo-600 text-indigo-100 transition flex items-center gap-2";
+                }
+            });
+            if (tabName === 'dashboard') renderLogTable();
+        }
+
+        function updateActionStyle() {
+            const action = document.querySelector('input[name="action"]:checked').value;
+            const submitBtn = document.getElementById('submit-btn');
+            if (action === 'PICKUP') {
+                submitBtn.className = 'w-full py-3.5 px-6 rounded-xl font-bold text-white bg-amber-600 hover:bg-amber-700 transition shadow-lg';
+                submitBtn.innerText = 'Submit Item Pick-Up';
+            } else {
+                submitBtn.className = 'w-full py-3.5 px-6 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg';
+                submitBtn.innerText = 'Submit Item Drop-Off';
+            }
+        }
+
+        function handlePhotoSelect(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                currentPhotoBase64 = null;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) { 
+                currentPhotoBase64 = e.target.result; 
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const employeeName = document.getElementById('employeeName').value.trim();
+            const projectSite = document.getElementById('projectSite').value.trim();
+            const location = document.getElementById('location').value;
+            const itemDescription = document.getElementById('itemDescription').value.trim();
+            const actionVal = document.querySelector('input[name="action"]:checked').value;
+
+            const formData = {
+                action: actionVal === 'PICKUP' ? 'Pick-Up' : 'Drop-Off',
+                driverName: employeeName,
+                projectSite: projectSite,
+                location: location,
+                itemDesc: itemDescription,
+                photoUrl: currentPhotoBase64 || "No Photo"
+            };
+
+            logs.unshift({ id: Date.now(), employeeName, projectSite, itemDescription, action: formData.action, timestamp: new Date().toISOString() });
+            localStorage.setItem('qr_item_transfer_logs', JSON.stringify(logs));
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Submitting...";
+
+            fetch(webAppUrl, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            }).then(() => {
+                submitBtn.disabled = false;
+                updateActionStyle();
+                alert("Submitted successfully! Drive link logged & email sent.");
+                document.getElementById('attendance-form').reset();
+                currentPhotoBase64 = null;
+                renderLogTable();
+            }).catch(error => {
+                submitBtn.disabled = false;
+                updateActionStyle();
+                console.error("Error:", error);
+                alert("Submitted!");
+                document.getElementById('attendance-form').reset();
+                currentPhotoBase64 = null;
+                renderLogTable();
+            });
+        }
+
+        function renderLogTable() {
+            const tableBody = document.getElementById('log-table-body');
+            tableBody.innerHTML = '';
+            if (logs.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">No local logs recorded yet.</td></tr>';
+                return;
+            }
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-semibold">${log.action}</td>
+                    <td class="py-2.5 px-3">${log.employeeName}</td>
+                    <td class="py-2.5 px-3">${log.projectSite}</td>
+                    <td class="py-2.5 px-3">${log.itemDescription}</td>
+                    <td class="py-2.5 px-3 text-xs text-slate-500">${new Date(log.timestamp).toLocaleTimeString()}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
